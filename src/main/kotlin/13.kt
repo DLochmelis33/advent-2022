@@ -1,9 +1,7 @@
 import kotlinx.serialization.json.*
 import java.io.File
 
-sealed class PacketStruct {
-    abstract operator fun compareTo(other: PacketStruct): Int
-}
+sealed class PacketStruct : Comparable<PacketStruct>
 
 class ListPacket(val items: List<PacketStruct>) : PacketStruct() {
     override fun compareTo(other: PacketStruct): Int {
@@ -27,8 +25,6 @@ class IntPacket(val value: Int) : PacketStruct() {
 }
 
 fun main() {
-    val input = File("in.txt").readLines().filter { it.isNotEmpty() }.chunked(2).map { (a, b) -> a to b }
-    var result = 0
     fun parseToPacket(s: String): PacketStruct {
         fun parseElem(e: JsonElement): PacketStruct = when (e) {
             is JsonPrimitive -> IntPacket(e.int)
@@ -37,10 +33,14 @@ fun main() {
         }
         return parseElem(Json.parseToJsonElement(s))
     }
-    for ((i, t) in input.withIndex()) {
-        val a = parseToPacket(t.first)
-        val b = parseToPacket(t.second)
-        if (a <= b) result += i + 1
-    }
-    println(result)
+
+    val divider1 = parseToPacket("[[2]]")
+    val divider2 = parseToPacket("[[6]]")
+
+    val input = File("in.txt").readLines()
+        .filter { it.isNotEmpty() }
+        .map(::parseToPacket)
+
+    val sorted = (input + listOf(divider1, divider2)).sorted()
+    println((sorted.indexOf(divider1) + 1) * (sorted.indexOf(divider2) + 1))
 }
