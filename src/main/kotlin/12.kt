@@ -1,6 +1,8 @@
 import java.io.File
 import java.util.*
 
+// solution to part 1 is in previous commit 6644516a080f362ec82d63065d4cca6ddf343d1e
+
 fun main() {
     System.setIn(File("in.txt").inputStream())
     val table = generateSequence { readlnOrNull()?.toList() }.toList()
@@ -37,11 +39,11 @@ fun main() {
             }
             queue.addAll(buffer)
             buffer.clear()
-            if (queue.isEmpty()) error("graph exhausted")
+            if (queue.isEmpty()) return Int.MAX_VALUE
         }
     }
 
-    val start = indPairs.first { (i, j) -> table[i][j] == 'S' }
     val target = indPairs.first { (i, j) -> table[i][j] == 'E' }
-    println(bfs(start, target))
+    val result = indPairs.filter { (i, j) -> elevations[i][j] == 0 }.map { start -> bfs(start, target) }.min()
+    println(result)
 }
