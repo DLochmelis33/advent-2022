@@ -27,21 +27,38 @@ class UnitedSegments {
 
 fun main() {
     val inputRegex = Regex("Sensor at x=(.+), y=(.+): closest beacon is at x=(.+), y=(.+)")
-    val yTarget = 2000000
-    val us = UnitedSegments()
-    val occupied = mutableSetOf<Pair<Int, Int>>()
-    File("in.txt").readLines().forEach { line ->
+    val input = File("in.txt").readLines().map { line ->
         val (xs, ys, xb, yb) = inputRegex.matchEntire(line)!!.groupValues.drop(1).map { it.toInt() }
-        val dist = abs(xs - xb) + abs(ys - yb)
-        // xs-xMin + abs(ys-yTarget) = dist
-        // xMax-xs + abs(ys-yTarget) = dist
-        if (abs(ys - yTarget) <= dist) {
-            val xMin = xs + abs(ys - yTarget) - dist
-            val xMax = dist - abs(ys - yTarget) + xs
-            us.add(xMin, xMax)
-        }
-        if (yb == yTarget) occupied.add(xb to yb)
-        if (ys == yTarget) occupied.add(xs to ys)
+        (xs to ys) to (xb to yb)
     }
-    println(us.segs.sumOf { it.last - it.first + 1 } - occupied.size)
+
+    val coordLimit = 4000000
+    for (yt in 0..coordLimit) {
+        val us = UnitedSegments()
+        val occupied = mutableSetOf<Pair<Int, Int>>()
+        for ((sensor, beacon) in input) {
+            val (xs, ys) = sensor
+            val (xb, yb) = beacon
+            val dist = abs(xs - xb) + abs(ys - yb)
+            // xs-xMin + abs(ys-yt) = dist
+            // xMax-xs + abs(ys-yt) = dist
+            if (abs(ys - yt) <= dist) {
+                val xMin = xs + abs(ys - yt) - dist
+                val xMax = dist - abs(ys - yt) + xs
+                us.add(xMin, xMax)
+            }
+            if (yb == yt) occupied.add(xb to yb)
+            if (ys == yt) occupied.add(xs to ys)
+        }
+        val areas = us.segs.filter { it.last >= 0 && it.first <= coordLimit }
+        if (areas.size != 1) {
+            assert(areas.size == 2)
+            assert(areas[0].last + 2 == areas[1].first)
+            val xt = areas[0].last + 1
+            println("xt=$xt, yt=$yt")
+            println(xt.toLong() * coordLimit + yt)
+            break
+        }
+    }
+    println("done")
 }
