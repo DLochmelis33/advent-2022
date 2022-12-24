@@ -1,8 +1,8 @@
 import kotlin.math.abs
 
-private operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>) = (first + other.first) to (second + other.second)
+operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>) = (first + other.first) to (second + other.second)
 
-private operator fun Pair<Int, Int>.minus(other: Pair<Int, Int>) = (first - other.first) to (second - other.second)
+operator fun Pair<Int, Int>.minus(other: Pair<Int, Int>) = (first - other.first) to (second - other.second)
 
 private infix fun Pair<Int, Int>.dist(other: Pair<Int, Int>) = abs(first - other.first) + abs(second - other.second)
 
