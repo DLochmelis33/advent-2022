@@ -24,31 +24,47 @@ fun main() {
         interestingIndices.slice((0 until k).filter { s.bit(it) }).sumOf { valves[it].flowRate }
     }
 
-    // dp[t][v][s]: t is time, v is current valve, s is set of opened valves
-    val dp = List(31) {
+    // dp[v][u][s]: t is time, v is current valve, s is set of opened valves
+    fun genEmptyDp() = List(n) {
         List(n) {
             MutableList(1 shl k) { Int.MIN_VALUE }
         }
     }
+
+    var dp = genEmptyDp()
     // t=0, AA, all valves off
     dp[0][0][0] = 0
 
-    for (t in 0 until 30) {
-        fun relax(v: Int, s: Int, value: () -> Int) {
-            value().let { if (dp[t + 1][v][s] < it) dp[t + 1][v][s] = it }
+    val tLimit = 25
+    for (t in 0 until tLimit) {
+        val nextDp = genEmptyDp()
+        fun relax(v: Int, u: Int, s: Int, value: () -> Int) {
+            value().let { if (nextDp[v][u][s] < it) nextDp[v][u][s] = it }
         }
         for (v in 0 until n) {
-            for (s in 0 until (1 shl k)) {
-                val nextValue = dp[t][v][s] + flow[s]
-                for (u in graph[v]) relax(u, s) { nextValue }
-                interestingMap[v]?.let { iv ->
-                    if (!s.bit(iv)) relax(v, s bitOn iv) { nextValue }
+            for (u in 0 until n) {
+                for (s in 0 until (1 shl k)) {
+                    val nextValue = dp[v][u][s] + flow[s]
+                    for(vv in graph[v] + v) {
+                        for(uu in graph[u] + u) {
+                            relax(vv, uu, s) { nextValue }
+                        }
+                    }
+                    interestingMap[v]?.let { iv ->
+                        if(!s.bit(iv)) for(uu in graph[u] + u) relax(iv, uu, s bitOn iv) { nextValue }
+                        interestingMap[u]?.let { iu ->
+                            if(!s.bit(iu)) relax(iv, iu, (s bitOn iu) bitOn iv) { nextValue }
+                        }
+                    }
+                    interestingMap[u]?.let { iu ->
+                        if(!s.bit(iu)) for(vv in graph[v] + v) relax(vv, iu, s bitOn iu) { nextValue }
+                    }
                 }
-                relax(v, s) { nextValue }
             }
         }
+        dp = nextDp
     }
 
-    val result = dp[30].maxOf { it.maxOf { it } }
+    val result = dp.maxOf { it.maxOf { it.maxOf { it } } }
     println(result)
 }
