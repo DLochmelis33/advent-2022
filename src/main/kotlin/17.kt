@@ -21,9 +21,10 @@ fun main() {
     val jetPattern = File("in.txt").readLines().first().toList()
     val jets = sequence { while (true) yieldAll(jetPattern) }.iterator()
 
-    fun makeWorld() = List(7) { MutableList(1_000_000) { false } }
+    fun makeWorld() = List(7) { MutableList(100_000_000) { false } }
     val world = makeWorld()
     var height = 0
+    println("init world")
 
     fun updateHeight() {
         while (world.any { it[height] }) height++
@@ -45,15 +46,45 @@ fun main() {
         }
         rock.forEach { (x, y) -> world[x][y] = true }
         updateHeight()
-
-//        println("dropped a rock:")
-//        for (y in height downTo 0) {
-//            for (x in 0 until 7) print(if (world[x][y]) '#' else '.')
-//            println()
-//        }
-//        println("\n")
     }
 
-    repeat(2022) { dropRock() }
-    println(height)
+    val gcd = rockList.size * jetPattern.size
+    println("gcd = $gcd")
+
+    val magicNumber = 400 // must be larger than period's cnt AND IS ALSO MAGIC
+    fun gcdDrop() = repeat(gcd) { dropRock() }
+    fun prepareDrop() =
+        repeat(magicNumber) { i -> gcdDrop().also { println("preparing: done ${i + 1} / $magicNumber") } }
+
+    var periodHeight: Int? = null
+    fun findPeriod(): Int {
+        fun takeSnapshot() = world.map { it.subList(height - 100, height) }
+
+        prepareDrop()
+        val target = takeSnapshot()
+        val prepHeight = height
+        var cnt = 0
+        while (true) {
+            cnt++
+            gcdDrop()
+            if (target == takeSnapshot()) break
+            println("finding period: cnt=$cnt")
+        }
+        periodHeight = height - prepHeight
+        return gcd * cnt
+    }
+
+    val period = findPeriod()
+    println("period = $period")
+    val curDrops = magicNumber * gcd + period
+
+    val leftRocks = 1000000000000L - curDrops
+    val curHeight = height
+
+    println("doing extra ${leftRocks % period} drops")
+    repeat((leftRocks % period).toInt()) { dropRock() }
+    val extraHeight = height - curHeight
+
+    println("RESULT:")
+    println(curHeight + leftRocks / period * periodHeight!! + extraHeight)
 }
