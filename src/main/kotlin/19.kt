@@ -107,7 +107,7 @@ private fun State.allowedTransitions(blueprint: Blueprint): Sequence<State> {
     return withRobots + this.acquireResources() // idle
 }
 
-private const val TIME_LIMIT = 24
+private const val TIME_LIMIT = 32
 
 suspend fun main() = coroutineScope {
     val inputRegex = Regex(
@@ -129,7 +129,7 @@ suspend fun main() = coroutineScope {
         )
     })
 
-    val bestStrategies = blueprints.withIndex().map { (i, blueprint) ->
+    val bestStrategies = blueprints.withIndex().take(3).map { (i, blueprint) ->
         val startingState = State(emptyMap(), mapOf(RobotType.ORE to 1), 0)
 
         fun State.reachableStates(): Sequence<State> = sequence {
@@ -163,6 +163,6 @@ suspend fun main() = coroutineScope {
 
         bestState.resources[ResourceType.GEODE] ?: 0
     }
-    val result = bestStrategies.withIndex().sumOf { (i, v) -> (i + 1) * v }
+    val result = bestStrategies.reduce(Int::times)
     println(result)
 }
