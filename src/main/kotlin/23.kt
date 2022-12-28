@@ -30,7 +30,9 @@ fun main() {
         }
     }
 
-    repeat(10) {
+    var cnt = 0
+    while(true) {
+        cnt++
         // phase 1: intentions
         val intentions = positions.map { pos ->
             val (x, y) = pos
@@ -47,6 +49,7 @@ fun main() {
             ) (x to y) else intentionChecks.firstNotNullOfOrNull { it(pos) } ?: pos
             Intention(pos, to)
         }
+        if(intentions.all { it.from == it.to }) break
         // phase 2: move
         intentions.filter { itn ->
             intentions.none { it.to == itn.to && it !== itn }
@@ -56,8 +59,9 @@ fun main() {
         }
         // phase 3: rotate checks
         intentionChecks.add(intentionChecks.removeFirst())
+
+        if(cnt % 10 == 0) println("round $cnt")
     }
 
-    val result = calcRegion().let { (xr, yr) -> (xr.last - xr.first + 1) * (yr.last - yr.first + 1) - positions.size }
-    println(result)
+    println(cnt)
 }
