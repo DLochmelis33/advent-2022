@@ -3,6 +3,7 @@ import java.io.File
 infix fun Int.bitOn(k: Int) = this or (1 shl k)
 infix fun Int.bitOff(k: Int) = this and (1 shl k).inv()
 fun Int.bit(k: Int) = (this shr k) and 1 == 1
+infix fun Int.isBit(k: Int) = this.bit(k)
 
 fun main() {
     data class ValveData(val name: String, val flowRate: Int, val neighbors: List<String>)
@@ -35,8 +36,8 @@ fun main() {
     // t=0, AA, all valves off
     dp[0][0][0] = 0
 
-    val tLimit = 25
-    for (t in 0 until tLimit) {
+    val tLimit = 26
+    repeat(tLimit) {
         val nextDp = genEmptyDp()
         fun relax(v: Int, u: Int, s: Int, value: () -> Int) {
             value().let { if (nextDp[v][u][s] < it) nextDp[v][u][s] = it }

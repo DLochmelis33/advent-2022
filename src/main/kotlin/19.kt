@@ -13,23 +13,23 @@ private enum class RobotType(val minedResource: ResourceType) {
 
 private typealias Blueprint = Map<RobotType, Cost>
 
-private data class State(
+private data class State19(
     val resources: Map<ResourceType, Int>,
     val robots: Map<RobotType, Int>,
     val minute: Int,
 ) {
     fun canAfford(cost: Cost) = cost.all { (resource, price) -> (resources[resource] ?: 0) >= price }
 
-    fun buy(robotType: RobotType, blueprint: Blueprint): State {
+    fun buy(robotType: RobotType, blueprint: Blueprint): State19 {
         val cost = blueprint[robotType]!!
-        return State(
+        return State19(
             resources.mapValues { (res, quantity) -> (quantity - (cost[res] ?: 0)).also { assert(it >= 0) } },
             robots + (robotType to 1 + (robots[robotType] ?: 0)),
             minute,
         )
     }
 
-    fun acquireResources() = State(
+    fun acquireResources() = State19(
         resources.toMutableMap().apply {
             robots.forEach { (robot, count) ->
                 val res = robot.minedResource
@@ -56,7 +56,7 @@ private data class COCO(
 
 private val cocoMajorMap = List(4) { mutableMapOf<COCO, Int>() }
 
-private fun checkMajorant(s: State): Boolean {
+private fun checkMajorant(s: State19): Boolean {
     if (s.resources.size > 2 || s.robots.size > 2) return true
 
     val oRes = s.resources[ResourceType.ORE] ?: 0
@@ -80,7 +80,7 @@ private fun cleanupOCOC() {
     cocoMajorMap.forEach { it.clear() }
 }
 
-private fun State.allowedTransitions(blueprint: Blueprint): Sequence<State> {
+private fun State19.allowedTransitions(blueprint: Blueprint): Sequence<State19> {
     if (minute == TIME_LIMIT) return emptySequence()
 
     // -------- questionable pruning ---------
@@ -130,9 +130,9 @@ suspend fun main() = coroutineScope {
     })
 
     val bestStrategies = blueprints.withIndex().take(3).map { (i, blueprint) ->
-        val startingState = State(emptyMap(), mapOf(RobotType.ORE to 1), 0)
+        val startingState = State19(emptyMap(), mapOf(RobotType.ORE to 1), 0)
 
-        fun State.reachableStates(): Sequence<State> = sequence {
+        fun State19.reachableStates(): Sequence<State19> = sequence {
             if (minute == TIME_LIMIT) yield(this@reachableStates) else {
                 yieldAll(allowedTransitions(blueprint).flatMap { it.reachableStates() })
             }
