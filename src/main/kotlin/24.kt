@@ -60,12 +60,18 @@ fun main() {
 
     // no need to build full graph, just maintain bfs queue
     var currentPositions: Set<Pos> = setOf(start)
+    val targets = mutableListOf(end, start, end)
     while (true) {
         stepWorld()
         currentPositions = currentPositions.flatMap { it.getNeighbors() }.toSet()
         assert(currentPositions.none { it in occupiedPos })
         assert(currentPositions.isNotEmpty())
-        if (end in currentPositions) break
+
+        if (targets.first() in currentPositions) {
+            currentPositions = setOf(targets.first())
+            targets.removeFirst()
+            if(targets.isEmpty()) break
+        }
 
 //        println("after time $t:")
 //        (yMin..yMax).forEach { y ->
