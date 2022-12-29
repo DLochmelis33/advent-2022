@@ -39,6 +39,7 @@ fun main() {
     repeat(26) {
         println("t=$it: started")
         for (v in 0 until n) {
+            println("\t${v+1}/$n")
             for (u in 0 until n) {
                 for (s in 0 until (1 shl k)) {
                     val curValue = dp[v][u][s] + flow[s]
